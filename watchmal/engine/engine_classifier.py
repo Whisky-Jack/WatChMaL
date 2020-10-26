@@ -17,6 +17,7 @@ import os
 from time import strftime, localtime, time
 import sys
 from sys import stdout
+import copy
 
 # WatChMaL imports
 from watchmal.dataset.data_utils import get_data_loader
@@ -195,11 +196,12 @@ class ClassifierEngine:
                             val_data = next(val_iter)
                         
                         # extract the event data from the input data tuple
-                        self.data      = val_data['data'].float()
-                        self.labels    = val_data['labels'].long()
-                        self.energies  = val_data['energies'].float()
-                        self.angles    = val_data['angles'].float()
-                        self.event_ids = val_data['event_ids'].float()
+                        # TODO: see if copyting helps
+                        self.data      = copy.deepcopy(val_data['data'].float())
+                        self.labels    = copy.deepcopy(val_data['labels'].long())
+                        self.energies  = copy.deepcopy(val_data['energies'].float())
+                        self.angles    = copy.deepcopy(val_data['angles'].float())
+                        self.event_ids = copy.deepcopy(val_data['event_ids'].float())
 
                         val_res = self.forward(False)
                         
@@ -314,9 +316,10 @@ class ClassifierEngine:
             
             # Extract the event data and label from the DataLoader iterator
             for it, eval_data in enumerate(self.data_loaders["test"]):
-
-                self.data = eval_data['data'].float()
-                self.labels = eval_data['labels'].long()
+                
+                # TODO: see if copying helps
+                self.data = copy.deepcopy(eval_data['data'].float())
+                self.labels = copy.deepcopy(eval_data['labels'].long())
 
                 # Run the forward procedure and output the result
                 result = self.forward(False)
@@ -326,7 +329,8 @@ class ClassifierEngine:
                 
                 # Copy the tensors back to the CPU
                 self.labels = self.labels.to("cpu")
-                eval_indices = eval_data['indices'].long().to("cpu")
+                # TODO:  see if copying helps
+                eval_indices = copy.deepcopy(eval_data['indices'].long().to("cpu"))
                 
                 # Add the local result to the final result
                 indices.extend(eval_indices)
