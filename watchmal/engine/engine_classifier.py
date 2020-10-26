@@ -188,15 +188,17 @@ class ClassifierEngine:
                     val_metrics = {"iteration": self.iteration, "epoch": epoch, "loss": 0., "accuracy": 0., "saved_best": 0}
 
                     for val_batch in range(num_val_batches):
+                        #val_data = {}
                         try:
                             val_data = next(val_iter)
                         except StopIteration:
+                            #del val_data
                             del val_iter
                             val_iter = iter(self.data_loaders["validation"])
                             val_data = next(val_iter)
-                        
+                        """
                         # extract the event data from the input data tuple
-                        # TODO: see if copyting helps
+                        # TODO: see if copying helps
                         self.data      = copy.deepcopy(val_data['data'].float())
                         self.labels    = copy.deepcopy(val_data['labels'].long())
                         self.energies  = copy.deepcopy(val_data['energies'].float())
@@ -259,11 +261,12 @@ class ClassifierEngine:
 
                 #Call backward: backpropagate error and update weights using loss = self.loss
                 self.backward()
+                """
 
                 # update the epoch and iteration
                 epoch          += 1./len(self.data_loaders["train"])
                 self.iteration += 1
-
+                """
                 # get relevant attributes of result for logging
                 train_metrics = {"iteration": self.iteration, "epoch": epoch, "loss": res["loss"], "accuracy": res["accuracy"]}
                 
@@ -271,11 +274,15 @@ class ClassifierEngine:
                 self.train_log.record(train_metrics)
                 self.train_log.write()
                 self.train_log.flush()
+                """
                 
                 # print the metrics at given intervals
                 if self.rank == 0 and self.iteration % report_interval == 0:
+                    #print("... Iteration %d ... Epoch %1.2f ... Training Loss %1.3f ... Training Accuracy %1.3f" %
+                    #      (self.iteration, epoch, res["loss"], res["accuracy"]))
+                    # TODO: restore
                     print("... Iteration %d ... Epoch %1.2f ... Training Loss %1.3f ... Training Accuracy %1.3f" %
-                          (self.iteration, epoch, res["loss"], res["accuracy"]))
+                          (self.iteration, epoch, 0, 0))
                 
                 if epoch >= epochs:
                     break
