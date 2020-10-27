@@ -381,8 +381,7 @@ def compute_roc(softmax_out_val, labels_val, true_label, false_label):
     
     return fpr, tpr, thr
 
-def plot_roc(fpr, tpr, thr, true_label_name, false_label_name, fig_list=None, axes=None, show=False):
-    
+def plot_roc(fpr, tpr, thr, true_label_name, false_label_name, fig_list=None, xlims=None, ylims=None, axes=None, show=False):
     """
     Purpose : Plot ROC curves for a classifier that has been evaluated on a validation set with respect to given labels
     
@@ -419,23 +418,43 @@ def plot_roc(fpr, tpr, thr, true_label_name, false_label_name, fig_list=None, ax
         if 2 in fig_list: 
             ax2 = next(axes_iter)
 
+    if xlims is not None:
+        xlim_iter = iter(xlims)
+    if ylims is not None:
+        ylim_iter = iter(ylims)
+
     if 0 in fig_list: 
         ax0.tick_params(axis="both", labelsize=20)
         ax0.plot(fpr,tpr,label=r'{} VS {} ROC, AUC={:.3f}'.format(true_label_name, false_label_name, roc_AUC))
         ax0.set_xlabel('FPR',fontweight='bold',fontsize=24,color='black')
         ax0.set_ylabel('TPR',fontweight='bold',fontsize=24,color='black')
         ax0.legend(loc="lower right",prop={'size': 16})
+
+        if xlims is not None:
+            xlim = next(xlim_iter)
+            ax0.set_xlim(xlim[0],xlim[1])
+        if ylims is not None:
+            ylim = next(ylim_iter)
+            ax0.set_ylim(ylim[0],ylim[1])
     
     if 1 in fig_list: 
         ax1.tick_params(axis="both", labelsize=20)
         ax1.set_yscale('log')
-        ax1.set_ylim(0.2,1.2e6)
+        ax1.set_xlim(0.2,1.0)
+        ax1.set_ylim(1e0, 2e1)
         ax1.grid(b=True, which='major', color='gray', linestyle='-')
         ax1.grid(b=True, which='minor', color='gray', linestyle='--')
         ax1.plot(tpr, rejection, label=r'{} VS {} ROC, AUC={:.3f}'.format(true_label_name, false_label_name, roc_AUC))
         ax1.set_xlabel('efficiency',fontweight='bold',fontsize=24,color='black')
         ax1.set_ylabel('Rejection',fontweight='bold',fontsize=24,color='black')
         ax1.legend(loc="upper right",prop={'size': 16})
+
+        if xlims is not None:
+            xlim = next(xlim_iter)
+            ax1.set_xlim(xlim[0],xlim[1])
+        if ylims is not None:
+            ylim = next(ylim_iter)
+            ax1.set_ylim(ylim[0],ylim[1])
     
     if 2 in fig_list: 
         ax2.tick_params(axis="both", labelsize=20)
@@ -447,6 +466,13 @@ def plot_roc(fpr, tpr, thr, true_label_name, false_label_name, fig_list=None, ax
         ax2.set_xlabel('efficiency',fontweight='bold',fontsize=24,color='black')
         ax2.set_ylabel('~significance',fontweight='bold',fontsize=24,color='black')
         ax2.legend(loc="upper right",prop={'size': 16})
+
+        if xlims is not None:
+            xlim = next(xlim_iter)
+            ax2.set_xlim(xlim[0],xlim[1])
+        if ylims is not None:
+            ylim = next(ylim_iter)
+            ax2.set_ylim(ylim[0],ylim[1])
 
     if show:
         plt.show()
