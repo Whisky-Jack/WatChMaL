@@ -11,7 +11,7 @@ pmts_per_mpmt = 19
 class CNNmPMTDataset(H5Dataset):
 
     def __init__(self, h5file, mpmt_positions_file, is_distributed, transforms=None, collapse_arrays=False):
-        super().__init__(h5file, transforms, is_distributed)
+        super().__init__(h5file, is_distributed, transforms)
         self.mpmt_positions = np.load(mpmt_positions_file)['mpmt_image_positions']
         self.data_size = np.max(self.mpmt_positions, axis=0) + 1
         n_channels = pmts_per_mpmt
