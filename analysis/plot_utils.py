@@ -68,7 +68,7 @@ def tile(canvas, ul, pmts):
         for col in range(10):
             canvas[row+ul[0]][col+ul[1]] = mpmt[row][col]
 
-def disp_learn_hist(location,losslim=None,show=True):
+def disp_learn_hist(location, losslim=None, axis=None, show=True):
     
     """
     Purpose : Plot the loss and accuracy history for a training session
@@ -82,7 +82,11 @@ def disp_learn_hist(location,losslim=None,show=True):
 
     train_log_df = get_aggregated_train_data(location)
 
-    fig, ax1 = plt.subplots(figsize=(12,8),facecolor='w')
+    if axis is None:
+        fig, ax1 = plt.subplots(figsize=(12,8),facecolor='w')
+    else:
+        ax1 = axis
+    
     line11 = ax1.plot(train_log_df.epoch, train_log_df.loss, linewidth=2, label='Train loss', color='b', alpha=0.3)
     line12 = ax1.plot(val_log_df.epoch, val_log_df.loss, marker='o', markersize=3, linestyle='', label='Validation loss', color='blue')
 
@@ -114,13 +118,16 @@ def disp_learn_hist(location,losslim=None,show=True):
         plt.show()
         return
     
-    return fig
+    if axis is None:
+        return fig
 
 def get_aggregated_train_data(location):
     # get all training data files
     base_log_path = location + '/log_train_[0-9]*.csv'
     log_paths = glob.glob(base_log_path)
+
     print("Found training logs: ", log_paths)
+    
     log_dfs = []
     for log_path in log_paths:
         log_dfs.append(pd.read_csv(log_path))
@@ -440,8 +447,6 @@ def plot_roc(fpr, tpr, thr, true_label_name, false_label_name, fig_list=None, xl
     if 1 in fig_list: 
         ax1.tick_params(axis="both", labelsize=20)
         ax1.set_yscale('log')
-        ax1.set_xlim(0.2,1.0)
-        ax1.set_ylim(1e0, 2e1)
         ax1.grid(b=True, which='major', color='gray', linestyle='-')
         ax1.grid(b=True, which='minor', color='gray', linestyle='--')
         ax1.plot(tpr, rejection, label=r'{} VS {} ROC, AUC={:.3f}'.format(true_label_name, false_label_name, roc_AUC))
