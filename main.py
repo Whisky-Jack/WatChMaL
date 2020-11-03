@@ -17,12 +17,22 @@ import os
 
 logger = logging.getLogger('train')
 
+def check_params(modelA_state_dict, modelB_state_dict):
+    for key in modelA_state_dict:
+        is_equal = (modelA_state_dict[key]==modelB_state_dict[key]).all()
+        print('Checking {}, is equal = {}'.format(key, is_equal))
+        assert(is_equal)
+        if not is_equal:
+            print('ERROR!')
+            break
+
 @hydra.main(config_path='config/', config_name='resnet_train')
 def main(config):
     logger.info(f"Running with the following config:\n{OmegaConf.to_yaml(config)}")
 
     ngpus = len(config.gpu_list)
-    is_distributed = ngpus > 1
+    # TODO: revert > change
+    is_distributed = ngpus >= 1
     
     # Initialize process group env variables
     if is_distributed:
@@ -74,11 +84,24 @@ def main_worker_function(rank, ngpus_per_node, is_distributed, config):
     # Instantiate model and engine
     model = instantiate(config.model).to(gpu)
 
+    # TODO: get pre model state_dict
+    pre_state_dict = model.state_dict()
+    # model.module
+    #print(pre_state_dict.keys())
+    print(pre_state_dict['feature_extractor.conv1.weight'][0, 0:4])
+    #input()
+
     # configure the device to be used for model training and inference
     if is_distributed:
         # Convert model batch norms to synchbatchnorm
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DDP(model, device_ids=[gpu], find_unused_parameters=True)
+    
+    # TODO: get pre model state_dict
+    post_state_dict = model.module.state_dict()
+    print(post_state_dict['feature_extractor.conv1.weight'][0, 0:4])
+
+    check_params(pre_state_dict, post_state_dict)
 
     # Instantiate the engine
     engine = instantiate(config.engine, model=model, rank=rank, gpu=gpu, dump_path=config.dump_path)

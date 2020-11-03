@@ -69,7 +69,8 @@ class ClassifierEngine:
         """
         Set up optimizers from optimizer config
         """
-        self.optimizer = instantiate(optimizer_config, params=self.model_accs.parameters())
+        # TODO: fix optimizer thing
+        self.optimizer = instantiate(optimizer_config, params=self.model.parameters()) #params=self.model_accs.parameters())
 
     def configure_data_loaders(self, data_config, loaders_config, is_distributed):
         """
@@ -139,6 +140,9 @@ class ClassifierEngine:
             
         Returns : None
         """
+        # TODO: get pre model state_dict
+        post_state_dict = self.model.module.state_dict()
+        print(post_state_dict['feature_extractor.conv1.weight'][0, 0:4])
 
         # initialize training params
         epochs          = train_config.epochs
