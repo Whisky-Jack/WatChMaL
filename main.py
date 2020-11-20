@@ -80,7 +80,7 @@ def main_worker_function(rank, ngpus_per_node, is_distributed, config):
     # Instantiate model and engine
     model = instantiate(config.model).to(gpu)
 
-    # configure the device to be used for model training and inference
+    # Configure the device to be used for model training and inference
     if is_distributed:
         # Convert model batch norms to synchbatchnorm
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
