@@ -61,7 +61,7 @@ def main(config):
         main_worker_function(0, ngpus, is_distributed, config)
 
 def main_worker_function(rank, ngpus_per_node, is_distributed, config):
-    # infer rank from gpu and ngpus, rank is position in gpu list
+    # Infer rank from gpu and ngpus, rank is position in gpu list
     gpu = config.gpu_list[rank]
 
     print("Running main worker function on device: {}".format(gpu))
