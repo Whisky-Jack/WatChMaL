@@ -11,10 +11,13 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.multiprocessing as mp
 
 # TODO: Attempted pickle fix
+#mp.set_start_method('spawn')
+#print(mp.get_context())
+#mp.set_start_method('forkserver')
+"""
 ctx = mp.get_context()
 print(ctx.reducer)
 
-"""
 import pickle2reducer
 ctx.reducer = pickle2reducer.Pickle2Reducer()
 """
@@ -30,11 +33,13 @@ logger = logging.getLogger('train')
 
 @hydra.main(config_path='config/', config_name='resnet_train')
 def main(config):
+
+    #mp.set_start_method('spawn')
     logger.info(f"Running with the following config:\n{OmegaConf.to_yaml(config)}")
 
     ngpus = len(config.gpu_list)
-    # TODO: Fix distributed mode
-    is_distributed = ngpus > 1
+    # TODO: Fix distributed mode switch when finished debugging
+    is_distributed = ngpus >= 1
     
     # Initialize process group env variables
     if is_distributed:
@@ -66,12 +71,15 @@ def main(config):
         print("Using multiprocessing...")
         devids = ["cuda:{0}".format(x) for x in config.gpu_list]
         print("Using DistributedDataParallel on these devices: {}".format(devids))
+        # TODO: experimenting with alternative start method
         mp.spawn(main_worker_function, nprocs=ngpus, args=(ngpus, is_distributed, config))
+        #mp.start_processes(main_worker_function, nprocs=ngpus, args=(ngpus, is_distributed, config), start_method='forkserver')
     else:
         print("Only one gpu found, not using multiprocessing...")
         main_worker_function(0, ngpus, is_distributed, config)
 
 def main_worker_function(rank, ngpus_per_node, is_distributed, config):
+    print("rank: ", rank)
     # Infer rank from gpu and ngpus, rank is position in gpu list
     gpu = config.gpu_list[rank]
 

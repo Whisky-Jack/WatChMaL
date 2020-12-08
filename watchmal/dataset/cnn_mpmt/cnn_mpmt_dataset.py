@@ -12,6 +12,8 @@ class CNNmPMTDataset(H5Dataset):
 
     def __init__(self, h5file, mpmt_positions_file, is_distributed, transforms=None, collapse_arrays=False):
         super().__init__(h5file, is_distributed, transforms)
+        # TODO: uncomment
+        
         self.mpmt_positions = np.load(mpmt_positions_file)['mpmt_image_positions']
         self.data_size = np.max(self.mpmt_positions, axis=0) + 1
         n_channels = pmts_per_mpmt
@@ -25,8 +27,10 @@ class CNNmPMTDataset(H5Dataset):
             transform_funcs = [getattr(transformations, transform_name) for transform_name in transforms]
             self.transforms = transform_funcs
             self.n_transforms = len(self.transforms)
+        
 
     def get_data(self, hit_pmts, hit_charges, hit_times):
+        
         hit_mpmts = hit_pmts // pmts_per_mpmt
         hit_pmt_in_modules = hit_pmts % pmts_per_mpmt
         hit_rows = self.mpmt_positions[hit_mpmts, 0]
@@ -47,5 +51,6 @@ class CNNmPMTDataset(H5Dataset):
             for i, transform in enumerate(self.transforms):
                 if selection[i]:
                     processed_data = transform(processed_data)
+        
 
         return processed_data
