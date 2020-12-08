@@ -18,8 +18,6 @@ logger = logging.getLogger('train')
 
 @hydra.main(config_path='config/', config_name='resnet_train')
 def main(config):
-
-    #mp.set_start_method('spawn')
     logger.info(f"Running with the following config:\n{OmegaConf.to_yaml(config)}")
 
     ngpus = len(config.gpu_list)

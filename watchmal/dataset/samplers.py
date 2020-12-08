@@ -42,7 +42,7 @@ class DistributedSamplerWrapper(DistributedSampler):
               sampler will shuffle the indices
         """
         super(DistributedSamplerWrapper, self).__init__(
-            sampler,
+            list(sampler),
             num_replicas=num_replicas,
             rank=rank,
             shuffle=shuffle,
