@@ -26,8 +26,6 @@ class DistributedSamplerWrapper(DistributedSampler):
     def __init__(
         self,
         sampler,
-        # TODO: remove added arg
-        dataset,
         seed,
         num_replicas: Optional[int] = None,
         rank: Optional[int] = None,
@@ -43,11 +41,8 @@ class DistributedSamplerWrapper(DistributedSampler):
             shuffle (bool, optional): If true,
               sampler will shuffle the indices
         """
-        # TODO: check this part
-        #super_dataset = list(sampler)
-        super_dataset = dataset
         super(DistributedSamplerWrapper, self).__init__(
-            super_dataset,
+            sampler,
             num_replicas=num_replicas,
             rank=rank,
             shuffle=shuffle,
@@ -60,10 +55,8 @@ class DistributedSamplerWrapper(DistributedSampler):
         self.epoch = epoch
     
     def __iter__(self):
-        #time1 = time.time()
         # fetch DistributedSampler indices
         indexes_of_indexes = super().__iter__()
-        """
         
         # deterministically shuffle based on epoch
         updated_seed = self.seed + int(self.epoch)
@@ -74,16 +67,5 @@ class DistributedSamplerWrapper(DistributedSampler):
 
         # get subsampler_indexes[indexes_of_indexes]
         distributed_subsampler_indices = itemgetter(*indexes_of_indexes)(subsampler_indices)
-        
-        #time2 = time.time()
-        #print("fetching iter took", time2 - time1)
 
-        new_iter = iter(distributed_subsampler_indices)
-
-        #time3 = time.time()
-        #print("fetching new iter took", time3 - time2)
-        """
-        # TODO: remove
-        new_iter = indexes_of_indexes
-
-        return new_iter
+        return iter(distributed_subsampler_indices)

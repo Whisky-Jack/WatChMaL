@@ -12,7 +12,6 @@ class CNNmPMTDataset(H5Dataset):
 
     def __init__(self, h5file, mpmt_positions_file, is_distributed, transforms=None, collapse_arrays=False):
         super().__init__(h5file, is_distributed, transforms)
-        # TODO: uncomment
         
         self.mpmt_positions = np.load(mpmt_positions_file)['mpmt_image_positions']
         self.data_size = np.max(self.mpmt_positions, axis=0) + 1
@@ -33,8 +32,10 @@ class CNNmPMTDataset(H5Dataset):
         
         hit_mpmts = hit_pmts // pmts_per_mpmt
         hit_pmt_in_modules = hit_pmts % pmts_per_mpmt
+
         hit_rows = self.mpmt_positions[hit_mpmts, 0]
         hit_cols = self.mpmt_positions[hit_mpmts, 1]
+
         data = np.zeros(self.data_size)
         data[hit_pmt_in_modules, hit_rows, hit_cols] = hit_charges
 

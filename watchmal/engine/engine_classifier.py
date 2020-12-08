@@ -139,86 +139,7 @@ class ClassifierEngine:
             
         Returns : None
         """
-        
-        # TODO: remove
-        #import torch.multiprocessing as mp
 
-        # TODO: Attempted pickle fix
-        #print(mp.get_context())
-        
-        if False:
-            time0 = time()
-
-            print("Fetching iterator...")
-            val_iter = iter(self.data_loaders["validation"])
-            time1 = time()
-            print("Done in time: ", time1 - time0)
-
-            print("Fetching data...")
-            data = next(val_iter)
-            time0 = time()
-            print("Done in time: ", time0 - time1)
-
-            print("Fetching data...")
-            data = next(val_iter)
-            time1 = time()
-            print("Done in time: ", time1 - time0)
-
-
-            time0 = time()
-
-            print("Fetching iterator...")
-            val_iter = iter(self.data_loaders["validation"])
-            time1 = time()
-            print("Done in time: ", time1 - time0)
-
-            print("Fetching data...")
-            data = next(val_iter)
-            time0 = time()
-            print("Done in time: ", time0 - time1)
-
-            print("Fetching data...")
-            data = next(val_iter)
-            time1 = time()
-            print("Done in time: ", time1 - time0)
-
-
-            time0 = time()
-
-            print("Fetching iterator...")
-            val_iter = iter(self.data_loaders["validation"])
-            time1 = time()
-            print("Done in time: ", time1 - time0)
-
-            print("Fetching data...")
-            data = next(val_iter)
-            time0 = time()
-            print("Done in time: ", time0 - time1)
-
-            print("Fetching data...")
-            data = next(val_iter)
-            time1 = time()
-            print("Done in time: ", time1 - time0)
-
-        else:
-            time0 = time()
-
-            print("Fetching iterator")
-            val_iter = iter(self.data_loaders["validation"])
-            time1 = time()
-            print("Done in time: ", time1 - time0)
-
-            print("Fetching iterator")
-            val_iter = iter(self.data_loaders["validation"])
-            time2 = time()
-            print("Done in time: ", time2 - time1)
-
-            print("Fetching iterator")
-            val_iter = iter(self.data_loaders["validation"])
-            time3 = time()
-            print("Done in time: ", time3 - time2)
-
-        """
         # initialize training params
         epochs          = train_config.epochs
         report_interval = train_config.report_interval
@@ -241,11 +162,8 @@ class ClassifierEngine:
         best_val_acc = 0.0
         best_val_loss = 1.0e6
 
-        #time0 = time()
         # initialize the iterator over the validation set
         val_iter = iter(self.data_loaders["validation"])
-        #time1 = time()
-        #print("fetching first iterator took ", time1 - time0)
 
         # global training loop for multiple epochs
         while (floor(epoch) < epochs):
@@ -260,9 +178,8 @@ class ClassifierEngine:
             train_loader = self.data_loaders["train"]
 
             # update seeding for distributed samplers
-            # TODO: reincorporate when debugging finished
-            #if self.is_distributed:
-            #    train_loader.sampler.set_epoch(epoch)
+            if self.is_distributed:
+                train_loader.sampler.set_epoch(epoch)
 
             # local training loop for batches in a single epoch
             for i, train_data in enumerate(self.data_loaders["train"]):
@@ -279,14 +196,15 @@ class ClassifierEngine:
                             val_data = next(val_iter)
                         except StopIteration:
                             del val_iter
+                            # TODO: still needs to be cleaned up before final push
                             time0 = time()
                             print("Fetching new validation iterator...")
                             val_iter = iter(self.data_loaders["validation"])
-                            #time1 = time()
+                            time1 = time()
                             val_data = next(val_iter)
-                            #time2= time()
+                            time2= time()
                             print("Fetching iterator took time ", time1 - time0)
-                            #print("second step step took time ", time2 - time1)
+                            print("second step step took time ", time2 - time1)
                         
                         # extract the event data from the input data tuple
                         self.data      = val_data['data'].float()
@@ -364,7 +282,6 @@ class ClassifierEngine:
                 self.train_log.write()
                 self.train_log.flush()
                 
-                
                 # print the metrics at given intervals
                 if self.rank == 0 and self.iteration % report_interval == 0:
                     previous_iteration_time = iteration_time
@@ -378,7 +295,7 @@ class ClassifierEngine:
         self.train_log.close()
         if self.rank == 0:
             self.val_log.close()
-        """
+        
         
 
     def evaluate(self, test_config):
