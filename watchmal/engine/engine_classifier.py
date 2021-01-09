@@ -124,7 +124,7 @@ class ClassifierEngine:
         self.optimizer.step()       # step params
     
     # ========================================================================
-
+    
     def train(self, train_config):
         """
         Train the model on the training set.
@@ -173,6 +173,7 @@ class ClassifierEngine:
             times = []
 
             start_time = time()
+            iteration_time = start_time
 
             train_loader = self.data_loaders["train"]
 
@@ -195,8 +196,15 @@ class ClassifierEngine:
                             val_data = next(val_iter)
                         except StopIteration:
                             del val_iter
+                            # TODO: still needs to be cleaned up before final push
+                            time0 = time()
+                            print("Fetching new validation iterator...")
                             val_iter = iter(self.data_loaders["validation"])
+                            time1 = time()
                             val_data = next(val_iter)
+                            time2= time()
+                            print("Fetching iterator took time ", time1 - time0)
+                            print("second step step took time ", time2 - time1)
                         
                         # extract the event data from the input data tuple
                         self.data      = val_data['data'].float()
@@ -274,11 +282,12 @@ class ClassifierEngine:
                 self.train_log.write()
                 self.train_log.flush()
                 
-                
                 # print the metrics at given intervals
                 if self.rank == 0 and self.iteration % report_interval == 0:
-                    print("... Iteration %d ... Epoch %1.2f ... Training Loss %1.3f ... Training Accuracy %1.3f" %
-                          (self.iteration, epoch, res["loss"], res["accuracy"]))
+                    previous_iteration_time = iteration_time
+                    iteration_time = time()
+                    print("... Iteration %d ... Epoch %1.2f ... Training Loss %1.3f ... Training Accuracy %1.3f ... Time Elapsed %1.3f ... Iteration Time %1.3f" %
+                          (self.iteration, epoch, res["loss"], res["accuracy"], iteration_time - start_time, iteration_time - previous_iteration_time))
                 
                 if epoch >= epochs:
                     break
@@ -286,6 +295,8 @@ class ClassifierEngine:
         self.train_log.close()
         if self.rank == 0:
             self.val_log.close()
+        
+        
 
     def evaluate(self, test_config):
         """
@@ -395,7 +406,7 @@ class ClassifierEngine:
                   "\nAvg eval acc : "  + str(val_acc/val_iterations))
         
     # ========================================================================
-    def restore_best_state(self):
+    def restore_best_state(self, placeholder):
         best_validation_path = "{}{}{}{}".format(self.dirpath,
                                      str(self.model._get_name()),
                                      "BEST",

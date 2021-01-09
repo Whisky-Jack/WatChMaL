@@ -7,10 +7,8 @@ from hydra.utils import instantiate
 # torch imports
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
-import torch.multiprocessing as mp
 
-# TODO: see if this can be removed
-#torch.multiprocessing.set_sharing_strategy('file_system')
+import torch.multiprocessing as mp
 
 # generic imports
 import os
@@ -61,6 +59,7 @@ def main(config):
         main_worker_function(0, ngpus, is_distributed, config)
 
 def main_worker_function(rank, ngpus_per_node, is_distributed, config):
+    print("rank: ", rank)
     # Infer rank from gpu and ngpus, rank is position in gpu list
     gpu = config.gpu_list[rank]
 
