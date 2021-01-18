@@ -1,16 +1,26 @@
-# PyTorch imports
+"""
+Class for loading data in h5 format
+"""
+
+# torch imports
 from torch.utils.data import Dataset
+import torch.multiprocessing as mp
+
+# generic imports
 import h5py
 import numpy as np
 from abc import ABC, abstractmethod
 import copy
 import time
 
-import torch.multiprocessing as mp
-
 class H5Dataset(Dataset, ABC):
-
     def __init__(self, h5_path, is_distributed, transforms=None):
+        """
+        Args:
+            h5_path                 ... path to h5 dataset file
+            is_distributed          ... whether running in multiprocessing mode
+            transforms              ... transforms to apply
+        """
         self.h5_path = h5_path
         with h5py.File(self.h5_path, 'r') as h5_file:
             self.dataset_length = h5_file["labels"].shape[0]
