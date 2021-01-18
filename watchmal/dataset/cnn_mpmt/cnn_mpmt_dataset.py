@@ -42,8 +42,9 @@ class CNNmPMTDataset(H5Dataset):
         # fix barrel array indexing to match endcaps in xyz ordering
         data[:, 12:28, :] = data[barrel_map_array_idxs, 12:28, :]
 
-        print(data.shape)
-        input()
+        # TODO: remove when fixed plotting
+        #print(data.shape)
+        #input()
 
         # collapse arrays if desired
         if self.collapse_arrays:
