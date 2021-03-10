@@ -358,16 +358,17 @@ class ClassifierEngine:
             self.model.eval()
             
             # Variables for the confusion matrix
-            loss, accuracy, indices, labels, predictions, softmaxes= [],[],[],[],[],[]
+            loss, accuracy, indices, labels, predictions, softmaxes, ids = [],[],[],[],[],[],[]
             
             # Extract the event data and label from the DataLoader iterator
             for it, eval_data in enumerate(self.data_loaders["test"]):
                 
                 # load data
-                self.data = copy.deepcopy(eval_data['data'].float())
+                self.data   = copy.deepcopy(eval_data['data'].float())
                 self.labels = copy.deepcopy(eval_data['labels'].long())
                 
                 eval_indices = copy.deepcopy(eval_data['indices'].long().to("cpu"))
+                eval_ids = copy.deepcopy(eval_data['root_files'] + '_' + eval_data['event_ids'])
 
                 # Run the forward procedure and output the result
                 result = self.forward(False)
@@ -380,6 +381,7 @@ class ClassifierEngine:
                 
                 # Add the local result to the final result
                 indices.extend(eval_indices)
+                ids.extend(eval_ids)
                 labels.extend(self.labels)
                 predictions.extend(result['predicted_labels'])
                 softmaxes.extend(result["softmax"])
@@ -398,11 +400,12 @@ class ClassifierEngine:
         local_eval_metrics_dict = {"eval_iterations":iterations, "eval_loss":loss, "eval_acc":accuracy}
         
         indices     = np.array(indices)
+        ids         = np.array(ids)
         labels      = np.array(labels)
         predictions = np.array(predictions)
         softmaxes   = np.array(softmaxes)
         
-        local_eval_results_dict = {"indices":indices, "labels":labels, "predictions":predictions, "softmaxes":softmaxes}
+        local_eval_results_dict = {"indices":indices, "ids":ids, "labels":labels, "predictions":predictions, "softmaxes":softmaxes}
 
         if self.is_distributed:
             # Gather results from all processes
@@ -414,6 +417,7 @@ class ClassifierEngine:
                     local_eval_metrics_dict[name] = np.array(tensor.cpu())
                 
                 indices     = np.array(global_eval_results_dict["indices"].cpu())
+                ids         = np.array(global_eval_results_dict["ids"].cpu())
                 labels      = np.array(global_eval_results_dict["labels"].cpu())
                 predictions = np.array(global_eval_results_dict["predictions"].cpu())
                 softmaxes   = np.array(global_eval_results_dict["softmaxes"].cpu())
@@ -425,9 +429,10 @@ class ClassifierEngine:
             # Save overall evaluation results
             print("Saving Data...")
             np.save(self.dirpath + "indices.npy", sorted_indices)
-            np.save(self.dirpath + "labels.npy", labels[sorted_indices])
-            np.save(self.dirpath + "predictions.npy", predictions[sorted_indices])
-            np.save(self.dirpath + "softmax.npy", softmaxes[sorted_indices])
+            np.save(self.dirpath + "ids.npy", ids)
+            np.save(self.dirpath + "labels.npy", labels)
+            np.save(self.dirpath + "predictions.npy", predictions)
+            np.save(self.dirpath + "softmax.npy", softmaxes)
 
             # Compute overall evaluation metrics
             val_iterations = np.sum(local_eval_metrics_dict["eval_iterations"])
